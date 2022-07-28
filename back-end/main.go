@@ -1,6 +1,7 @@
 package main
 
 import (
+	"JUALiND/helper"
 	"database/sql"
 	"fmt"
 
@@ -8,11 +9,13 @@ import (
 )
 
 func main() {
-	_, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", "./database.db")
 
 	if err != nil {
 		panic(err)
 	}
 
+	helper.InitDB(db)
+	helper.Migrate(db)
 	fmt.Println("Hallo World")
 }
