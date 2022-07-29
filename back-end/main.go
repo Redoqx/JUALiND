@@ -21,7 +21,8 @@ func main() {
 	helper.InitDB(db)
 	helper.Migrate(db)
 	userRepo := repository.NewUserRepository(db)
-	m := controller.NewMux(userRepo)
+	productRepo := repository.NewProductRepository(db)
+	m := controller.NewMux(userRepo, productRepo)
 	log.Println("Server Listening at port 8000")
 	http.ListenAndServe(":8000", m)
 }
