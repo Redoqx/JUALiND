@@ -16,11 +16,21 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 func (r *UserRepository) CreateUser(user models.Users) error {
+	sqlStatement := `
+	INSERT INTO user (name, password, email, image_loc) 
+		VALUES (?, ?, ?, ?);`
+
+	_, err := r.db.Exec(sqlStatement, user.Name, user.Password, user.Email, user.ImageLoc)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (r *UserRepository) DeleteUser(id int) error {
-	sqlstmt := `DELETE FROM user WHERE id = ?`
+	sqlstmt := `DELETE FROM user WHERE id = ?;`
 
 	_, err := r.db.Exec(sqlstmt, id)
 
@@ -32,11 +42,28 @@ func (r *UserRepository) DeleteUser(id int) error {
 }
 
 func (r *UserRepository) UpdateUser(user models.Users) error {
+	sqlStatement := `
+		UPDATE user
+		SET name = ?,
+			password = ?,
+			email = ?,
+			image_loc = ?
+		WHERE 
+			id = ?;
+	`
+
+	_, err := r.db.Exec(sqlStatement, user.Name, user.Password, user.Email, user.ImageLoc, user.ID)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (r *UserRepository) GetUsers() ([]models.Users, error) {
-	sqlStatement := `SELECT * FROM user`
+	sqlStatement := `SELECT * FROM user;`
 
 	rows, err := r.db.Query(sqlStatement)
 
