@@ -2,17 +2,7 @@ package helper
 
 import (
 	"database/sql"
-
-	"golang.org/x/crypto/bcrypt"
 )
-
-func HashPassword(password string) (string, error) {
-	res, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return "", err
-	}
-	return string(res), nil
-}
 
 func Migrate(DB *sql.DB) {
 	//CODE
