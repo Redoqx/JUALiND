@@ -12,7 +12,7 @@ type Product struct {
 type Users struct {
 	ID       uint           `db:"id"`
 	Name     string         `db:"name"`
-	Password string         `db:"price"`
+	Password string         `db:"password"`
 	Email    string         `db:"email"`
 	ImageLoc sql.NullString `db:"image_loc"`
 }
