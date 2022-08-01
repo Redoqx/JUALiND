@@ -60,3 +60,24 @@ func InitDB(DB *sql.DB) {
 	}
 
 }
+
+func NullStringToString(s sql.NullString) string {
+	if s.Valid {
+		return s.String
+	} else {
+		return ""
+	}
+}
+
+func StringToNullString(s string) sql.NullString {
+	if len(s) < 1 {
+		return sql.NullString{
+			Valid: false,
+		}
+	} else {
+		return sql.NullString{
+			String: s,
+			Valid:  true,
+		}
+	}
+}
