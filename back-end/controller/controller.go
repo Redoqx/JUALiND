@@ -11,8 +11,10 @@ func NewMux(userRepo *repository.UserRepository, productRepo *repository.Product
 	m.HandleFunc("/hallo", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World"))
 	}))
+	m.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./assets"))))
 	m.Handle("/api/v1/users", router.GetAllUser(userRepo))
 	m.Handle("/api/v1/user", router.GetUserByID(userRepo))
+	m.Handle("/api/v1/user/create", router.CreateUser(userRepo))
 	m.Handle("/api/v1/user/delete", router.DeleteUserByID(userRepo))
 	m.Handle("/api/v1/products", router.GetAllProduct(productRepo))
 	m.Handle("/api/v1/product", router.GetProductID(productRepo))
