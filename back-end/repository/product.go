@@ -17,10 +17,36 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 }
 
 func (r *ProductRepository) CreateProduct(product models.Product) error {
+	sqlStatement := `
+	INSERT INTO product (name, price, image_loc) 
+		VALUES (?, ?, ?);`
+
+	_, err := r.db.Exec(sqlStatement, product.Name, product.Price, product.ImageLoc)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
 func (r *ProductRepository) UpdateProduct(product models.Product) error {
+	sqlStatement := `
+		UPDATE user
+		SET name = ?,
+			price = ?,
+			image_loc = ?
+		WHERE 
+			id = ?;
+	`
+
+	_, err := r.db.Exec(sqlStatement, product.Name, product.Price, product.ImageLoc, product.ID)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 

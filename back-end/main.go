@@ -6,12 +6,15 @@ import (
 	"JUALiND/repository"
 	"database/sql"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
+	rand.Seed(time.Now().Unix())
 	db, err := sql.Open("sqlite3", "./database.db")
 
 	if err != nil {
