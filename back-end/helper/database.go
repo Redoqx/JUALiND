@@ -14,11 +14,11 @@ func Migrate(DB *sql.DB) {
 			('Arief', 'coco@gmail.com', ?),
 			('Sapacikk', 'apa@gmail.com', ?);
 		
-		INSERT INTO product (name, price)
+		INSERT INTO product (name, price, desc, cur_quantity, quantity)
 		VALUES
-			('Harga Diri Guwe', 2000),
-			('Batu Dari Gunung Gunungan', 1000),
-			('Tisu Putih Bekas Cebok', 5000);
+			('Harga Diri Guwe', 3000, 'waodaowjdoiawjdwaijdoawjdoiajwdowaijdoaiwjdowajdo', 3, 3),
+			('Batu Dari Gunung Gunungan',1000, 'iwjadiwjadojawdoajwdoiwajdowaijdoawjwdaoij', 100, 100),
+			('Tisu Putih Bekas Cebok', 5000, 'wjadoiajwdoaiwjdoiawdoaiwjdwauwahdoaoijdawjdiowajdoiaw', 20, 30);
 		`
 
 	hash1, err := HashPassword(pass1)
@@ -39,7 +39,10 @@ func InitDB(DB *sql.DB) {
 		CREATE TABLE IF NOT EXISTS product (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
-			price TEXT NOT NULL,
+			price INTEGER NOT NULL,
+			desc TEXT NOT NULL,
+			cur_quantity INTEGER NOT NULL,
+			quantity INTEGER NOT NULL,
 			image_loc TEXT
 		);
 
