@@ -45,14 +45,31 @@ func (r *UserRepository) UpdateUser(user models.Users) error {
 	sqlStatement := `
 		UPDATE user
 		SET name = ?,
-			password = ?,
 			email = ?,
 			image_loc = ?
 		WHERE 
 			id = ?;
 	`
 
-	_, err := r.db.Exec(sqlStatement, user.Name, user.Password, user.Email, user.ImageLoc, user.ID)
+	_, err := r.db.Exec(sqlStatement, user.Name, user.Email, user.ImageLoc, user.ID)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateUserPassword(id int, hashedPassword string) error {
+
+	sqlStatement := `
+		UPDATE user
+		SET password = ?
+		WHERE 
+			id = ?;
+	`
+	_, err := r.db.Exec(sqlStatement, hashedPassword, id)
 
 	if err != nil {
 		log.Println(err)
