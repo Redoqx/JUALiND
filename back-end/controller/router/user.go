@@ -9,7 +9,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
+
+	"github.com/golang-jwt/jwt"
 )
+
+type tokenBody struct {
+	Token string `json:"token"`
+}
 
 func GetAllUser(userRepo *repository.UserRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +31,25 @@ func GetAllUser(userRepo *repository.UserRepository) http.Handler {
 
 	})
 }
+func GetUserByToken(userRepo *repository.UserRepository) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		UserData := r.Context().Value("user_detail").(models.Users)
 
+		expTime := time.Now().Add(60 * time.Minute)
+		newTokenString, err := generateUserToken(UserData, expTime)
+
+		if err != nil {
+			helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		helper.SuccessResponseJSON(w, "Success", map[string]interface{}{
+			"user":  UserData,
+			"token": newTokenString,
+		})
+		return
+	})
+}
 func GetUserByID(userRepo *repository.UserRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -73,6 +98,50 @@ func DeleteUserByID(userRepo *repository.UserRepository) http.Handler {
 		helper.SuccessResponseJSON(w, "Success to delete", nil)
 	})
 }
+func generateUserToken(user models.Users, expTime time.Time) (string, error) {
+	claims := &helper.UserClaims{
+		User: user,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(helper.JwtKey)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	return tokenString, nil
+
+}
+func LoginUser(userRepo *repository.UserRepository) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		user, err := userRepo.GetUserByEmail(email)
+		if err != nil {
+			helper.ErrorResponseJSON(w, err, "User Not Found", http.StatusNotFound)
+			return
+		}
+
+		if !helper.CheckPasswordHash(password, user.Password) {
+			helper.ErrorResponseJSON(w, fmt.Errorf("wrong password"), "Wrong Password", http.StatusUnauthorized)
+			return
+		}
+
+		expTime := time.Now().Add(30 * time.Minute)
+		tokenString, err := generateUserToken(*user, expTime)
+
+		if err != nil {
+			helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		helper.SuccessResponseJSON(w, "login Success", tokenBody{Token: tokenString})
+	})
+}
 
 func CreateUser(userRepo *repository.UserRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -119,22 +188,63 @@ func CreateUser(userRepo *repository.UserRepository) http.Handler {
 				return
 			}
 			helper.SuccessResponseJSON(w, "success", nil)
+			name := r.FormValue("name")
+			password := r.FormValue("password")
+			email := r.FormValue("email")
+			imageFile, imageHeader, err := r.FormFile("image")
+
+			if len(name) < 1 ||
+				len(password) < 1 ||
+				len(email) < 1 {
+				helper.ErrorResponseJSON(w, fmt.Errorf("error : request invalid"), "some field are not filled", http.StatusBadRequest)
+				return
+			}
+			password, _ = helper.HashPassword(password)
+			var u models.Users
+			if err != nil {
+				// Langsung save user tanpa gambar
+				u.Name = name
+				u.Email = email
+				u.Password = password
+				u.ImageLoc = helper.StringToNullString("")
+				err = userRepo.CreateUser(u)
+				if err != nil {
+					helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
+				}
+				helper.SuccessResponseJSON(w, "success", nil)
+			} else {
+				// save user serta gambarnya
+				if !helper.ImageIsJpgOrPng(imageHeader) {
+					helper.ErrorResponseJSON(w, fmt.Errorf("error : request invalid"), "image must be in png or jpg format", http.StatusBadRequest)
+					return
+				}
+				u.Name = name
+				u.Email = email
+				u.Password = password
+				fileLocation := helper.UploadImage(imageFile, imageHeader)
+				u.ImageLoc = helper.StringToNullString(r.Host + "/" + fileLocation)
+				log.Println(r.Host)
+				err = userRepo.CreateUser(u)
+				if err != nil {
+					helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
+					os.Remove(fileLocation)
+					return
+				}
+				helper.SuccessResponseJSON(w, "success", nil)
+			}
 		}
 	})
 }
 func UpdateUserPassword(userRepo *repository.UserRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(r.FormValue("id"))
 		password := r.FormValue("password")
 
-		if len(password) < 1 ||
-			err != nil ||
-			id < 1 {
+		if len(password) < 1 {
 			helper.ErrorResponseJSON(w, fmt.Errorf("error : request invalid"), "some field are not filled", http.StatusBadRequest)
 			return
-
 		}
 
+		userData := r.Context().Value("user_detail").(models.Users)
 		hashedPass, err := helper.HashPassword(password)
 
 		if err != nil {
@@ -143,12 +253,25 @@ func UpdateUserPassword(userRepo *repository.UserRepository) http.Handler {
 
 		}
 
-		err = userRepo.UpdateUserPassword(id, hashedPass)
+		err = userRepo.UpdateUserPassword(int(userData.ID), hashedPass)
 		if err != nil {
 			helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
 			return
 
 		}
+
+		userData.Password = hashedPass
+		expTime := time.Now().Add(30 * time.Minute)
+		newToken, err := generateUserToken(userData, expTime)
+
+		if err != nil {
+			helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		helper.SuccessResponseJSON(w, "Success", tokenBody{
+			Token: newToken,
+		})
 
 	})
 }
