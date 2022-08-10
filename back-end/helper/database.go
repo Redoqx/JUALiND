@@ -9,10 +9,10 @@ func Migrate(DB *sql.DB) {
 	pass1 := "apahayo"
 	pass2 := "123456"
 	sqlStatement := `
-		INSERT INTO user (name, email, password)
+		INSERT INTO user (name, email, role, password)
 		VALUES 
-			('Arief', 'coco@gmail.com', ?),
-			('Sapacikk', 'apa@gmail.com', ?);
+			('Arief', 'coco@gmail.com', "penjual", ?),
+			('Sapacikk', 'apa@gmail.com', "pembeli", ?);
 		
 		INSERT INTO product (name, price, desc, cur_quantity, quantity)
 		VALUES
@@ -51,6 +51,7 @@ func InitDB(DB *sql.DB) {
 			name TEXT NOT NULL,
 			email TEXT NOT NULL,
 			password TEXT NOT NULL,
+			role TEXT NOT NULL,
 			image_loc TEXT,
 			UNIQUE(email)
 		);

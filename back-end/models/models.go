@@ -17,6 +17,7 @@ type Users struct {
 	Name     string         `db:"name"`
 	Password string         `db:"password"`
 	Email    string         `db:"email"`
+	Role     string         `db:"role"`
 	ImageLoc sql.NullString `db:"image_loc"`
 }
 

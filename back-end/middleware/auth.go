@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"JUALiND/helper"
+	"JUALiND/models"
 	"context"
 	"fmt"
 	"log"
@@ -10,6 +11,20 @@ import (
 
 	"github.com/golang-jwt/jwt"
 )
+
+func Role(role string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userData := r.Context().Value("user_detail").(models.Users)
+
+		if strings.ToLower(userData.Role) != role {
+			helper.ErrorResponseJSON(w, fmt.Errorf("only %s can access this endpoint, your role is : %s", role, userData.Role), "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+
+	})
+}
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
