@@ -120,3 +120,19 @@ func (r *UserRepository) GetUser(id int) (*models.Users, error) {
 
 	return &u, nil
 }
+
+func (r *UserRepository) GetUserByEmail(email string) (*models.Users, error) {
+	sqlStatement := "SELECT * FROM user WHERE email = ?"
+	row := r.db.QueryRow(sqlStatement, email)
+
+	var u models.Users
+
+	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.ImageLoc)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &u, nil
+}
