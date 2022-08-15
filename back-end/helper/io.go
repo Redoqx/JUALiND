@@ -1,13 +1,14 @@
 package helper
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -20,12 +21,18 @@ func randSeq(n int) string {
 	return string(b)
 }
 
+func ImageIsJpgOrPng(header *multipart.FileHeader) bool {
+	ext := filepath.Ext(header.Filename)
+	log.Println(ext)
+	return ext == ".png" || ext == ".jpg"
+}
+
 func UploadImage(file multipart.File, header *multipart.FileHeader) string {
 	dir := "assets/image"
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
-			log.Println(fmt.Sprintf("creating dir : %s", err.Error()))
+			log.Printf("creating dir : %s", err.Error())
 		}
 	}
 	imageName := randSeq(20) + filepath.Ext(header.Filename)
@@ -44,4 +51,11 @@ func UploadImage(file multipart.File, header *multipart.FileHeader) string {
 	}
 
 	return fileLocation
+}
+
+func RemoveFile(r *http.Request, URL string) error {
+	fileLoc := "." + strings.Trim(URL, r.Host)
+
+	log.Println(fileLoc)
+	return os.Remove(fileLoc)
 }
