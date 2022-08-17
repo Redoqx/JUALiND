@@ -15,7 +15,7 @@ import (
 
 func main() {
 	rand.Seed(time.Now().Unix())
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", "file:./database.db?_foreign_keys=true")
 
 	if err != nil {
 		panic(err)
