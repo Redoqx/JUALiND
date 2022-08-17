@@ -14,11 +14,11 @@ func Migrate(DB *sql.DB) {
 			('Arief', 'coco@gmail.com', "penjual", ?),
 			('Sapacikk', 'apa@gmail.com', "pembeli", ?);
 		
-		INSERT INTO product (name, price, desc, cur_quantity, quantity)
+		INSERT INTO product (name, price, desc, cur_quantity, quantity, id_owner)
 		VALUES
-			('Harga Diri Guwe', 3000, 'waodaowjdoiawjdwaijdoawjdoiajwdowaijdoaiwjdowajdo', 3, 3),
-			('Batu Dari Gunung Gunungan',1000, 'iwjadiwjadojawdoajwdoiwajdowaijdoawjwdaoij', 100, 100),
-			('Tisu Putih Bekas Cebok', 5000, 'wjadoiajwdoaiwjdoiawdoaiwjdwauwahdoaoijdawjdiowajdoiaw', 20, 30);
+			('Harga Diri Guwe', 3000, 'waodaowjdoiawjdwaijdoawjdoiajwdowaijdoaiwjdowajdo', 3, 3, 1),
+			('Batu Dari Gunung Gunungan',1000, 'iwjadiwjadojawdoajwdoiwajdowaijdoawjwdaoij', 100, 100, 1),
+			('Tisu Putih Bekas Cebok', 5000, 'wjadoiajwdoaiwjdoiawdoaiwjdwauwahdoaoijdawjdiowajdoiaw', 20, 30, 1);
 		`
 
 	hash1, err := HashPassword(pass1)
@@ -36,16 +36,7 @@ func Migrate(DB *sql.DB) {
 
 func InitDB(DB *sql.DB) {
 	sqlStatement := `
-		CREATE TABLE IF NOT EXISTS product (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			price INTEGER NOT NULL,
-			desc TEXT NOT NULL,
-			cur_quantity INTEGER NOT NULL,
-			quantity INTEGER NOT NULL,
-			image_loc TEXT
-		);
-
+		PRAGMA foreign_keys = ON;
 		CREATE TABLE IF NOT EXISTS user (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
@@ -55,6 +46,34 @@ func InitDB(DB *sql.DB) {
 			image_loc TEXT,
 			UNIQUE(email)
 		);
+		CREATE TABLE IF NOT EXISTS product (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			price INTEGER NOT NULL,
+			desc TEXT NOT NULL,
+			cur_quantity INTEGER NOT NULL,
+			quantity INTEGER NOT NULL,
+			image_loc TEXT,
+			id_owner INTEGER,
+			FOREIGN KEY (id_owner)
+			REFERENCES user (id)
+				ON UPDATE CASCADE
+				ON DELETE SET NULL
+		);
+		CREATE TABLE IF NOT EXISTS order_record (
+			amount INTEGER NOT NULL,
+			id_buyer INTEGER,
+			id_product INTEGER,
+			FOREIGN KEY (id_buyer)
+			REFERENCES user (id)
+				ON UPDATE CASCADE
+				ON DELETE SET NULL,
+			FOREIGN KEY (id_product)
+			REFERENCES product (id)
+				ON UPDATE CASCADE
+				ON DELETE SET NULL
+		);
+
 	`
 
 	_, err := DB.Exec(sqlStatement)
