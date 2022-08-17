@@ -37,6 +37,8 @@ func CreateProduct(productRepo *repository.ProductRepository) http.Handler {
 			return
 		}
 
+		UserData := r.Context().Value("user_detail").(models.Users)
+
 		var p models.Product
 		if err != nil {
 			// Langsung save user tanpa gambar
@@ -46,6 +48,7 @@ func CreateProduct(productRepo *repository.ProductRepository) http.Handler {
 			p.Quantity = uint(Quantity)
 			p.Description = Desc
 			p.ImageLoc = helper.StringToNullString("")
+			p.OwnerID = UserData.ID
 			err = productRepo.CreateProduct(p)
 			if err != nil {
 				helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
@@ -67,7 +70,7 @@ func CreateProduct(productRepo *repository.ProductRepository) http.Handler {
 			p.ImageLoc = helper.StringToNullString(r.Host + "/" + fileLocation)
 			p.CurrentQuantity = uint(CurrentQuantity)
 			p.Quantity = uint(Quantity)
-			log.Println(r.Host)
+			p.OwnerID = UserData.ID
 			err = productRepo.CreateProduct(p)
 			if err != nil {
 				helper.ErrorResponseJSON(w, err, "Internal Server Error", http.StatusInternalServerError)
