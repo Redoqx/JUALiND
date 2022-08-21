@@ -19,6 +19,12 @@ func Migrate(DB *sql.DB) {
 			('Harga Diri Guwe', 3000, 'waodaowjdoiawjdwaijdoawjdoiajwdowaijdoaiwjdowajdo', 3, 3, 1),
 			('Batu Dari Gunung Gunungan',1000, 'iwjadiwjadojawdoajwdoiwajdowaijdoawjwdaoij', 100, 100, 1),
 			('Tisu Putih Bekas Cebok', 5000, 'wjadoiajwdoaiwjdoiawdoaiwjdwauwahdoaoijdawjdiowajdoiaw', 20, 30, 1);
+			
+		INSERT INTO order_record (amount, id_buyer, id_product, date) 
+		VALUES
+			(3, 2, 3, date('now')),
+			(1, 1, 2, date('now')),
+			(10, 1, 1, date('now'))
 		`
 
 	hash1, err := HashPassword(pass1)
@@ -37,6 +43,9 @@ func Migrate(DB *sql.DB) {
 func InitDB(DB *sql.DB) {
 	sqlStatement := `
 		PRAGMA foreign_keys = ON;
+		DROP TABLE IF EXISTS user;
+		DROP TABLE IF EXISTS product;
+		DROP TABLE IF EXISTS order_record;
 		CREATE TABLE IF NOT EXISTS user (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,

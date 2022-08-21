@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func NewMux(userRepo *repository.UserRepository, productRepo *repository.ProductRepository) *http.ServeMux {
+func NewMux(userRepo *repository.UserRepository, productRepo *repository.ProductRepository, orderRepo *repository.OrderRepository) *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("/hallo", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World"))
@@ -28,5 +28,6 @@ func NewMux(userRepo *repository.UserRepository, productRepo *repository.Product
 	m.Handle("/api/v1/user/token", middleware.AllowOrigin(middleware.Method("GET", middleware.AuthMiddleware(router.GetUserByToken(userRepo)))))
 	m.Handle("/api/v1/user/edit/password", middleware.AllowOrigin(middleware.Method("PUT", middleware.AuthMiddleware(router.UpdateUserPassword(userRepo)))))
 	m.Handle("/api/v1/user/product", middleware.AllowOrigin(middleware.Method("GET", middleware.AuthMiddleware(middleware.Role("penjual", router.GetProductByUser(productRepo))))))
+	m.Handle("/api/v1/product/orders", middleware.AllowOrigin(middleware.Method("GET", middleware.AuthMiddleware(middleware.Role("penjual", router.GetAllOrdersByUser(orderRepo))))))
 	return m
 }
