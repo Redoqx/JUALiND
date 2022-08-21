@@ -64,6 +64,8 @@ func InitDB(DB *sql.DB) {
 			amount INTEGER NOT NULL,
 			id_buyer INTEGER,
 			id_product INTEGER,
+			date TEXT NOT NULL,
+			confirmation_link TEXT,
 			FOREIGN KEY (id_buyer)
 			REFERENCES user (id)
 				ON UPDATE CASCADE

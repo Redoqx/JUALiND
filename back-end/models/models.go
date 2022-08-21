@@ -23,7 +23,9 @@ type Users struct {
 }
 
 type Order struct {
-	Amount    uint `db:"amount"`
-	ProductID uint `db:"product_id"`
-	BuyerID   uint `db:"user_id"`
+	Amount           uint   `db:"amount"`
+	ProductID        uint   `db:"product_id"`
+	BuyerID          uint   `db:"user_id"`
+	Date             string `db:"date"`
+	ConfirmationLink string `db:"confirmation_link"`
 }

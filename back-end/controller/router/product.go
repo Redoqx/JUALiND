@@ -224,6 +224,23 @@ func DeleteProductByID(productRepo *repository.ProductRepository) http.Handler {
 	})
 }
 
+func GetProductByUser(productRepo *repository.ProductRepository) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		UserData := r.Context().Value("user_detail").(models.Users)
+
+		product, err := productRepo.GetProductByUser(int(UserData.ID))
+
+		if err != nil {
+			helper.ErrorResponseJSON(w, err, "Not Found", http.StatusNotFound)
+			return
+		}
+
+		helper.SuccessResponseJSON(w, "Success", product)
+
+	})
+}
+
 func GetProductByName(productRepo *repository.ProductRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

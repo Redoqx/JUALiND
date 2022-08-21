@@ -107,6 +107,33 @@ func (r *ProductRepository) GetProducts() ([]models.Product, error) {
 	return result, nil
 }
 
+func (r *ProductRepository) GetProductByUser(userID int) ([]models.Product, error) {
+	sqlStatement := `
+		SELECT * FROM product WHERE id_owner = ?;
+	`
+
+	rows, err := r.db.Query(sqlStatement, userID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	var p []models.Product
+
+	for rows.Next() {
+		var item models.Product
+		err = rows.Scan(&item.ID, &item.Name, &item.Price, &item.Description, &item.CurrentQuantity, &item.Quantity, &item.ImageLoc, &item.OwnerID)
+		if err != nil {
+			log.Println(err.Error())
+			return nil, err
+		}
+		p = append(p, item)
+	}
+
+	return p, nil
+
+}
+
 func (r *ProductRepository) GetProductByName(name string) ([]models.Product, error) {
 	sqlStatement := `
 		SELECT * FROM product WHERE name LIKE ?;

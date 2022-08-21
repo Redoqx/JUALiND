@@ -27,5 +27,6 @@ func NewMux(userRepo *repository.UserRepository, productRepo *repository.Product
 	m.Handle("/api/v1/login", middleware.AllowOrigin(middleware.Method("GET", router.LoginUser(userRepo))))
 	m.Handle("/api/v1/user/token", middleware.AllowOrigin(middleware.Method("GET", middleware.AuthMiddleware(router.GetUserByToken(userRepo)))))
 	m.Handle("/api/v1/user/edit/password", middleware.AllowOrigin(middleware.Method("PUT", middleware.AuthMiddleware(router.UpdateUserPassword(userRepo)))))
+	m.Handle("/api/v1/user/product", middleware.AllowOrigin(middleware.Method("GET", middleware.AuthMiddleware(middleware.Role("penjual", router.GetProductByUser(productRepo))))))
 	return m
 }
