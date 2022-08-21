@@ -4,6 +4,7 @@ import "database/sql"
 
 type Product struct {
 	ID              uint           `db:"id"`
+	OwnerID         uint           `db:"owner_id"`
 	Name            string         `db:"name"`
 	Price           uint           `db:"price"`
 	Description     string         `db:"desc"`
@@ -21,8 +22,10 @@ type Users struct {
 	ImageLoc sql.NullString `db:"image_loc"`
 }
 
-type Roles struct {
-	ID     uint   `db:"id"`
-	UserID uint   `db:"user_id"`
-	Roles  string `db:"name"`
+type Order struct {
+	Amount           uint   `db:"amount"`
+	ProductID        uint   `db:"product_id"`
+	BuyerID          uint   `db:"user_id"`
+	Date             string `db:"date"`
+	ConfirmationLink string `db:"confirmation_link"`
 }

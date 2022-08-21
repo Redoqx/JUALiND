@@ -19,10 +19,10 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 
 func (r *ProductRepository) CreateProduct(product models.Product) error {
 	sqlStatement := `
-	INSERT INTO product (name, price, desc, cur_quantity, quantity, image_loc) 
-	VALUES (?, ?, ?, ?, ?, ?);`
+	INSERT INTO product (name, price, desc, cur_quantity, quantity, image_loc, id_owner) 
+	VALUES (?, ?, ?, ?, ?, ?, ?);`
 
-	_, err := r.db.Exec(sqlStatement, product.Name, product.Price, product.Description, product.CurrentQuantity, product.Quantity, product.ImageLoc)
+	_, err := r.db.Exec(sqlStatement, product.Name, product.Price, product.Description, product.CurrentQuantity, product.Quantity, product.ImageLoc, product.OwnerID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -73,7 +73,7 @@ func (r *ProductRepository) GetProduct(id int) (*models.Product, error) {
 
 	var u models.Product
 
-	err := row.Scan(&u.ID, &u.Name, &u.Price, &u.Description, &u.CurrentQuantity, &u.Quantity, &u.ImageLoc)
+	err := row.Scan(&u.ID, &u.Name, &u.Price, &u.Description, &u.CurrentQuantity, &u.Quantity, &u.ImageLoc, &u.OwnerID)
 
 	if err != nil {
 		log.Println(err)
@@ -97,7 +97,7 @@ func (r *ProductRepository) GetProducts() ([]models.Product, error) {
 
 	for rows.Next() {
 		var u models.Product
-		err := rows.Scan(&u.ID, &u.Name, &u.Price, &u.Description, &u.CurrentQuantity, &u.Quantity, &u.ImageLoc)
+		err := rows.Scan(&u.ID, &u.Name, &u.Price, &u.Description, &u.CurrentQuantity, &u.Quantity, &u.ImageLoc, &u.OwnerID)
 		if err != nil {
 			log.Println(err)
 			return nil, err
@@ -105,6 +105,33 @@ func (r *ProductRepository) GetProducts() ([]models.Product, error) {
 		result = append(result, u)
 	}
 	return result, nil
+}
+
+func (r *ProductRepository) GetProductByUser(userID int) ([]models.Product, error) {
+	sqlStatement := `
+		SELECT * FROM product WHERE id_owner = ?;
+	`
+
+	rows, err := r.db.Query(sqlStatement, userID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	var p []models.Product
+
+	for rows.Next() {
+		var item models.Product
+		err = rows.Scan(&item.ID, &item.Name, &item.Price, &item.Description, &item.CurrentQuantity, &item.Quantity, &item.ImageLoc, &item.OwnerID)
+		if err != nil {
+			log.Println(err.Error())
+			return nil, err
+		}
+		p = append(p, item)
+	}
+
+	return p, nil
+
 }
 
 func (r *ProductRepository) GetProductByName(name string) ([]models.Product, error) {
@@ -123,7 +150,7 @@ func (r *ProductRepository) GetProductByName(name string) ([]models.Product, err
 
 	for rows.Next() {
 		var item models.Product
-		err = rows.Scan(&item.ID, &item.Name, &item.Price, &item.Description, &item.CurrentQuantity, &item.Quantity, &item.ImageLoc)
+		err = rows.Scan(&item.ID, &item.Name, &item.Price, &item.Description, &item.CurrentQuantity, &item.Quantity, &item.ImageLoc, &item.OwnerID)
 		if err != nil {
 			log.Println(err.Error())
 			return nil, err
