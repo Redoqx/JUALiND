@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"JUALiND/models"
 	"database/sql"
 	"log"
 )
@@ -23,7 +24,17 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 		db: db,
 	}
 }
+func (o *OrderRepository) CreateOrder(order models.Order) error {
+	sqlStatement := `INSERT INTO order_record (amount, id_buyer, id_product, date) VALUES (?, ?, ?, date('now'))`
 
+	_, err := o.db.Exec(sqlStatement, order.Amount, order.BuyerID, order.ProductID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
 func (o *OrderRepository) GetAllOrdersByUser(ownerID int) ([]OrderStruct, error) {
 	sqlStatement := `
 		SELECT b.name, p.name, p.price, o.amount, o.date, o.confirmation_link 
