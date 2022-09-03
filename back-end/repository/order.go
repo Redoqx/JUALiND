@@ -2,21 +2,13 @@ package repository
 
 import (
 	"JUALiND/models"
+	"JUALiND/schema"
 	"database/sql"
 	"log"
 )
 
 type OrderRepository struct {
 	db *sql.DB
-}
-
-type OrderStruct struct {
-	BuyerName        string         `json:"buyer_name"`
-	ProductName      string         `json:"product_name"`
-	ProductPrice     int            `json:"product_price"`
-	Amount           int            `json:"amount"`
-	Date             string         `json:"date"`
-	ConfirmationLink sql.NullString `json:"confirmation_link"`
 }
 
 func NewOrderRepository(db *sql.DB) *OrderRepository {
@@ -35,7 +27,7 @@ func (o *OrderRepository) CreateOrder(order models.Order) error {
 	return nil
 
 }
-func (o *OrderRepository) GetAllOrdersByUser(ownerID int) ([]OrderStruct, error) {
+func (o *OrderRepository) GetAllOrdersByUser(ownerID int) ([]schema.OrderStruct, error) {
 	sqlStatement := `
 		SELECT b.name, p.name, p.price, o.amount, o.date, o.confirmation_link 
 		FROM 
@@ -52,10 +44,10 @@ func (o *OrderRepository) GetAllOrdersByUser(ownerID int) ([]OrderStruct, error)
 		return nil, err
 	}
 
-	var results []OrderStruct
+	var results []schema.OrderStruct
 
 	for rows.Next() {
-		var o OrderStruct
+		var o schema.OrderStruct
 		err = rows.Scan(&o.BuyerName, &o.ProductName, &o.ProductPrice, &o.Amount, &o.Date, &o.ConfirmationLink)
 
 		if err != nil {
