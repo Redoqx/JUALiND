@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gocarina/gocsv"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -58,4 +60,33 @@ func RemoveFile(r *http.Request, URL string) error {
 
 	log.Println(fileLoc)
 	return os.Remove(fileLoc)
+}
+
+func SaveToCSV(in interface{}) (string, error) {
+
+	dir := "assets/csv"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			log.Printf("creating dir : %s", err.Error())
+		}
+	}
+	fileName := randSeq(20) + ".csv"
+
+	fileLocation := filepath.Join(dir, fileName)
+	targetFile, err := os.OpenFile(fileLocation, os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		log.Println(err.Error())
+		return "", err
+	}
+	defer targetFile.Close()
+
+	err = gocsv.MarshalFile(in, targetFile)
+
+	if err != nil {
+		log.Println(err.Error())
+		return "", err
+	}
+
+	return fileLocation, nil
 }
