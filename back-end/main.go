@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -21,6 +22,12 @@ func main() {
 		panic(err)
 	}
 
+	PORT := os.Getenv("PORT")
+
+	if len(PORT) < 1 {
+		PORT = "8000"
+	}
+
 	helper.InitDB(db)
 	helper.Migrate(db)
 	userRepo := repository.NewUserRepository(db)
@@ -28,5 +35,5 @@ func main() {
 	orderRepo := repository.NewOrderRepository(db)
 	m := controller.NewMux(userRepo, productRepo, orderRepo)
 	log.Println("Server Listening at port 8000")
-	http.ListenAndServe(":8000", m)
+	http.ListenAndServe(":"+PORT, m)
 }
